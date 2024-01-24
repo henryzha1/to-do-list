@@ -30,38 +30,33 @@ function Task(name) {
     this.crossed = false;
 }
 
-function updateStrike(task) {
+function updateStrike(task, li) {
     if(task.crossed) {
         task.crossed = false;
+        li.removeAttribute("style");
     } else {
         task.crossed = true;
+        li.style.textDecoration = "line-through";
     }
+    return li;
 }
 
-function displayList(list) {
-    if(document.querySelector("ol")) {
-        document.querySelector("ol").remove();
-    }
-    const ol = document.createElement("ol");
-    document.querySelector("form#add").after(ol);
-    Object.keys(list.tasks).forEach(function(key) {
+function updateList(task, option, currentId = 0) {
+    if(option) {
         let li = document.createElement("li");
-        li.append(list.tasks[key].name);
-        li.setAttribute("id", list.tasks[key].id);
+        const ol = document.querySelector("ol");
+        li.append(task.name);
+        li.setAttribute("id", task.id);
         li.addEventListener("click", function() {
-            updateStrike(list.tasks[key]);
-            if(list.tasks[key].crossed) {
-                li.style.textDecoration = "line-through";
-            } else {
-                li.removeAttribute("style");
-            }
+            li = updateStrike(task, li);
         });
-        if(list.tasks[key].crossed) {
-            li.style.textDecoration = "line-through";
+        ol.append(li);
+    } else {
+        document.getElementById(task.id).remove();
+        for(let i = task.id + 1; i <= currentId; i++) {
+            document.getElementById(i).id = i - 1;
         }
-
-        document.querySelector("ol").append(li);
-    });
+    }
 }
 
 window.addEventListener("load", function() {
@@ -73,14 +68,18 @@ window.addEventListener("load", function() {
         let task = new Task(input);
         list.addTask(task);
 
-        displayList(list);
+        updateList(task, 1);
     });
 
     document.querySelector("form#delete").addEventListener(("submit"), function(e) {
         e.preventDefault();
+
         const input = parseInt(document.querySelector("#id").value);
+        const task = list.tasks[input];
+        const id = list.currentId;
         list.deleteTask(input);
-        displayList(list);
+        
+        updateList(task, 0, id);
     });
 
 
